@@ -6,6 +6,7 @@ import {
   subscribeBodySchema,
 } from './schemas';
 import type { UserEntity } from '../../utils/DB/entities/DBUsers';
+import { ERRORS } from '../../utils/constants';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
@@ -27,7 +28,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         equals: request.params.id,
       });
       if (!user) {
-        return fastify.httpErrors.notFound('User not found');
+        return fastify.httpErrors.notFound(ERRORS.USER_NOT_FOUND);
       }
       return user;
     }
@@ -58,7 +59,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         equals: request.params.id,
       });
       if (!user) {
-        return fastify.httpErrors.badRequest('User not found');
+        return fastify.httpErrors.badRequest(ERRORS.USER_NOT_FOUND);
       }
       const followers = await fastify.db.users.findMany({
         key: 'subscribedToUserIds',
@@ -94,7 +95,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         equals: request.body.userId,
       });
       if (!followedUser || !follower) {
-        return fastify.httpErrors.badRequest('User not found');
+        return fastify.httpErrors.badRequest(ERRORS.USER_NOT_FOUND);
       }
       if (!follower.subscribedToUserIds.includes(request.params.id)) {
         follower.subscribedToUserIds.push(request.params.id);
@@ -102,14 +103,14 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
           subscribedToUserIds: follower.subscribedToUserIds,
         });
       } else {
-        return fastify.httpErrors.conflict('Can not subscribe');
+        return fastify.httpErrors.conflict(ERRORS.USER_ALREADY_SUBSCRIBED);
       }
       const updatedUserWhoSubscribe = await fastify.db.users.findOne({
         key: 'id',
         equals: request.body.userId,
       });
       if (!updatedUserWhoSubscribe) {
-        return fastify.httpErrors.notFound('User not found');
+        return fastify.httpErrors.notFound(ERRORS.USER_NOT_FOUND);
       }
       return updatedUserWhoSubscribe;
     }
@@ -129,17 +130,17 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         equals: request.body.userId,
       });
       if (!follower) {
-        return fastify.httpErrors.notFound('User not found');
+        return fastify.httpErrors.notFound(ERRORS.USER_NOT_FOUND);
       }
       const followedUser = await fastify.db.users.findOne({
         key: 'id',
         equals: request.params.id,
       });
       if (!followedUser) {
-        return fastify.httpErrors.notFound('User not found');
+        return fastify.httpErrors.notFound(ERRORS.USER_NOT_FOUND);
       }
       if (!follower.subscribedToUserIds.includes(request.params.id)) {
-        return fastify.httpErrors.badRequest('User not subscribed');
+        return fastify.httpErrors.badRequest(ERRORS.USER_NOT_SUBSCRIBED);
       }
       const newSubscribedToUserIdsArray = follower.subscribedToUserIds.filter(
         (id) => id !== request.params.id
@@ -149,14 +150,14 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         { subscribedToUserIds: newSubscribedToUserIdsArray }
       );
       if (!updatedFollower) {
-        return fastify.httpErrors.notFound('User not found');
+        return fastify.httpErrors.notFound(ERRORS.USER_NOT_FOUND);
       }
       const userFromWhomUnSubscribed = await fastify.db.users.findOne({
         key: 'id',
         equals: request.body.userId,
       });
       if (!userFromWhomUnSubscribed) {
-        return fastify.httpErrors.notFound('User not found');
+        return fastify.httpErrors.notFound(ERRORS.USER_NOT_FOUND);
       }
       return updatedFollower;
     }
@@ -176,7 +177,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         equals: request.params.id,
       });
       if (!user) {
-        return fastify.httpErrors.badRequest('User not found');
+        return fastify.httpErrors.badRequest(ERRORS.USER_NOT_FOUND);
       }
       return await fastify.db.users.change(request.params.id, request.body);
     }

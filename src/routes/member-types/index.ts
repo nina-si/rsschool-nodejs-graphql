@@ -2,6 +2,7 @@ import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-sc
 import { idParamSchema } from '../../utils/reusedSchemas';
 import { changeMemberTypeBodySchema } from './schema';
 import type { MemberTypeEntity } from '../../utils/DB/entities/DBMemberTypes';
+import { ERRORS } from '../../utils/constants';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
@@ -25,7 +26,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         equals: request.params.id,
       });
       if (!memberType) {
-        return fastify.httpErrors.notFound('Membertype not found');
+        return fastify.httpErrors.notFound(ERRORS.MEMBERTYPE_NOT_FOUND);
       }
       return memberType;
     }
@@ -45,14 +46,14 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         equals: request.params.id,
       });
       if (!memberType) {
-        return fastify.httpErrors.badRequest('Membertype not found');
+        return fastify.httpErrors.badRequest(ERRORS.MEMBERTYPE_NOT_FOUND);
       }
       const newMemberType = await fastify.db.memberTypes.change(
         request.params.id,
         request.body
       );
       return !newMemberType
-        ? fastify.httpErrors.notFound('Membertype not found')
+        ? fastify.httpErrors.notFound(ERRORS.MEMBERTYPE_NOT_FOUND)
         : newMemberType;
     }
   );
